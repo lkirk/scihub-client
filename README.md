@@ -1,106 +1,53 @@
-scihub.py
-[![Python](https://img.shields.io/badge/Python-3%2B-blue.svg)](https://www.python.org)
+scihub-client
 =========
 
-scihub.py is an unofficial API for Sci-hub. scihub.py can search for papers on Google Scholars and download papers from Sci-hub. It can be imported independently or used from the command-line.
+scihub-client is a python client for Sci-hub. scihub-client was developed with inspiration from https://github.com/zaytoun/scihub.py
 
 If you believe in open access to scientific papers, please donate to Sci-Hub.
-
-Features
---------
-* Download specific articles directly or via Sci-hub
-* Download a collection of articles by passing in file of article identifiers
-* Search for articles on Google Scholars and download them
-
-**Note**: A known limitation of scihub.py is that captchas show up every now and then, blocking any searches or downloads.
-
-Setup
------
-```
-pip install -r requirements.txt
-```
-
-Usage
-------
-You can interact with scihub.py from the commandline:
-
-```
-usage: scihub.py [-h] [-d (DOI|PMID|URL)] [-f path] [-s query] [-sd query]
-                 [-l N] [-o path] [-v]
-
-SciHub - To remove all barriers in the way of science.
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -d (DOI|PMID|URL), --download (DOI|PMID|URL)
-                        tries to find and download the paper
-  -f path, --file path  pass file with list of identifiers and download each
-  -s query, --search query
-                        search Google Scholars
-  -sd query, --search_download query
-                        search Google Scholars and download if possible
-  -l N, --limit N       the number of search results to limit to
-  -o path, --output path
-                        directory to store papers
-  -v, --verbose         increase output verbosity
-  -p, --proxy           set proxy
-```
-
-You can also import scihub. The following examples below demonstrate all the features.
-
-### fetch
-
-```
-from scihub import SciHub
-
-sh = SciHub()
-
-# fetch specific article (don't download to disk)
-# this will return a dictionary in the form 
-# {'pdf': PDF_DATA,
-#  'url': SOURCE_URL,
-#  'name': UNIQUE_GENERATED NAME
-# }
-result = sh.fetch('http://ieeexplore.ieee.org/xpl/login.jsp?tp=&arnumber=1648853')
-```
 
 ### download
 
 ```
-from scihub import SciHub
+In [1]: from scihub import scihub
+   ...: import logging
+   ...: logging.basicConfig()
+   ...: scihub_client = scihub.SciHubClient()
 
-sh = SciHub()
-
-# exactly the same thing as fetch except downloads the articles to disk
-# if no path given, a unique name will be used as the file name
-result = sh.download('http://ieeexplore.ieee.org/xpl/login.jsp?tp=&arnumber=1648853', path='paper.pdf')
+# download works w/ the doi, pubmed number, doi link, anything that the scihub site can search for
+In [2]: scihub_client.download('30462157')
+Out[2]:
+{'out_path': '(2020) Dating admixture events is unsolved problem in multi-way admixed populations.pdf',
+ 'doi': '10.1093/bib/bby112',
+ 'pdf_url': 'https://dacemirror.sci-hub.st/journal-article/6b9ae0994bbbb2237d89e53c004cd873/oup-accepted-manuscript-2018.pdf'}
 ```
 
 ### search
 
 ```
-from scihub import SciHub
+In [1]: from scihub import scihub
+   ...: import logging
+   ...: logging.basicConfig()
+   ...: scihub_client = scihub.SciHubClient()
 
-sh = SciHub()
+# search works w/ the doi, pubmed number, doi link, anything that the scihub site can search for
+In [2]: scihub_client.query('30462157')
+Out[2]:
+{'doi': '10.1093/bib/bby112',
+ 'pdf_url': 'https://dacemirror.sci-hub.st/journal-article/6b9ae0994bbbb2237d89e53c004cd873/oup-accepted-manuscript-2018.pdf'}
 
-# retrieve 5 articles on Google Scholars related to 'bittorrent'
-results = sh.search('bittorrent', 5)
+# Not very good at handling errors yet
+In [4]: scihub_client.query('462157')
+---------------------------------------------------------------------------
+AttributeError                            Traceback (most recent call last)
+<ipython-input-4-74ac2edd4f28> in <module>
+----> 1 scihub_client.query('462157')
 
-# download the papers; will use sci-hub.io if it must
-for paper in results['papers']:
-	sh.download(paper['url'])
+scihub.py in query(self, query)
+    115         )
+    116         parsed_response = BeautifulSoup(response.content, "html.parser")
+--> 117         if parsed_response.find("div").text.endswith("article not found"):
+    118             raise ValueError(f"Article not found: {query}")
+    119
 
+AttributeError: 'NoneType' object has no attribute 'text'
 ```
-License
--------
-MIT
-
-
-
-
-
-
-
-
-
-
