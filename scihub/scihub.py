@@ -142,7 +142,7 @@ class SciHubClient:
     def _generate_file_name(self, doi):
         paper_meta = self._get_paper_meta(doi)
         # date = "-".join(map(str, paper_meta["indexed"]["date-parts"][0]))
-        ((year, _, _),) = paper_meta["indexed"]["date-parts"]
+        ((year, _, _),) = paper_meta["published-print"]["date-parts"]
         title = paper_meta["title"]
         # return f"({date}) {title}.pdf"
         return f"({year}) {title}.pdf"
